@@ -1,8 +1,8 @@
 import pygame
 import sys
-from game_state_manager import GameStateManager
-from menu import Menu
-from othello import Othello
+from states.game_state_manager import GameStateManager
+from states.menu import Menu
+from states.othello import Othello
 
 Screenwidth = 800
 Screenheight = 600
