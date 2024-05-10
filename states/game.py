@@ -5,7 +5,7 @@ from states.menu import Menu
 from states.othello import Othello
 
 Screenwidth = 800
-Screenheight = 600
+Screenheight = 800
 FPS = 60
 
 class Game:
@@ -14,7 +14,7 @@ class Game:
         self.display = pygame.display.set_mode((Screenwidth, Screenheight))
         self.clock = pygame.time.Clock()
 
-        self.gameStateManager = GameStateManager('game')
+        self.gameStateManager = GameStateManager('menu')
         self.menu = Menu(self.display, self.gameStateManager)
         self.game = Othello(self.display, self.gameStateManager)
 
