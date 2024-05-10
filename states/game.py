@@ -14,7 +14,7 @@ class Game:
         self.display = pygame.display.set_mode((Screenwidth, Screenheight))
         self.clock = pygame.time.Clock()
 
-        self.gameStateManager = GameStateManager('menu')
+        self.gameStateManager = GameStateManager('game')
         self.menu = Menu(self.display, self.gameStateManager)
         self.game = Othello(self.display, self.gameStateManager)
 
