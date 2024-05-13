@@ -34,7 +34,65 @@ class Othello:
                     col = x // self.grid.CELL_SIZE
                     if self.is_valid_move(row, col):
                         self.drop_piece(row, col)
+                        self.flip_pieces(row, col)
                         self.switch_player()
+                        self.game_over = self.check_game_over()
+
+
+
+    def is_valid_move(self, row, col):
+        if not (0 <= row < 8 and 0 <= col < 8 and self.board[row][col] == 0):
+            return False
+        for dr in [-1, 0, 1]:
+            for dc in [-1, 0, 1]:
+                if dr == 0 and dc == 0:
+                    continue
+                if self.check_direction(row, col, dr, dc):
+                    return True
+    
+    def drop_piece(self, row, col):
+        self.board[row][col] = self.current_player
+
+    def switch_player(self):
+        self.current_player *= -1
+
+    def flip_pieces(self, row, col):
+        for dr in [-1, 0, 1]:
+            for dc in [-1, 0, 1]:
+                if dr == 0 and dc == 0:
+                    continue
+                if self.check_direction(row, col, dr, dc):
+                    self.flip_direction(row, col, dr, dc)
+
+    def check_direction(self, row, col, dr, dc):
+        opponent = -self.current_player
+        r, c = row + dr, col + dc
+        if not (0 <= r < 8 and 0 <= c < 8) or self.board[r][c] != opponent:
+            return False
+        
+        while 0 <= r < 8 and 0 <= c < 8:
+            if self.board[r][c] == 0:
+                return False
+            if self.board[r][c] == self.current_player:
+                return True
+            r += dr
+            c += dc
+        return False
+    
+    def flip_direction(self, row, col, dr, dc):
+        opponent = -self.current_player
+        r, c = row + dr, col + dc
+        while self.board[r][c] == opponent:
+            self.board[r][c] = self.current_player
+            r += dr
+            c += dc
+
+    def check_game_over(self):
+        for row in range(8):
+            for col in range(8):
+                if self.board[row][col] == 0:
+                    return False
+        return True
 
     def update(self):
         pass
@@ -43,16 +101,6 @@ class Othello:
         self.display.fill((0, 128, 0))  # Green background
         self.grid.draw_board(self.board)
         pygame.display.flip()
-
-    def is_valid_move(self, row, col):
-        return 0 <= row < 8 and 0 <= col < 8 and self.board[row][col] == 0
-
-    def drop_piece(self, row, col):
-        self.board[row][col] = self.current_player
-
-    def switch_player(self):
-        self.current_player *= -1  # Switch player
-
 
 class Grid:
     def __init__(self, display):
