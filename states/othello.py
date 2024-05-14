@@ -98,9 +98,20 @@ class Othello:
         pass
 
     def render(self):
-        self.display.fill((0, 128, 0))  # Green background
-        self.grid.draw_board(self.board)
-        pygame.display.flip()
+            self.display.fill((0, 128, 0))  # Green background
+            self.grid.draw_board(self.board)
+            if not self.game_over:
+                valid_moves = self.get_valid_moves()
+                self.grid.draw_valid_moves(valid_moves)
+            pygame.display.flip()
+
+    def get_valid_moves(self):
+        valid_moves = []
+        for row in range(8):
+            for col in range(8):
+                if self.is_valid_move(row, col):
+                    valid_moves.append((row, col))
+        return valid_moves
 
 class Grid:
     def __init__(self, display):
@@ -113,10 +124,9 @@ class Grid:
 
         # Load piece images
         self.black_piece_image = pygame.image.load('assets/piece1.png').convert_alpha()
-        self.black_piece_image = pygame.transform.scale(self.black_piece_image, (self.CELL_SIZE / 1.2, self.CELL_SIZE / 1.2))
+        self.black_piece_image = pygame.transform.scale(self.black_piece_image, (int(self.CELL_SIZE / 1.2), int(self.CELL_SIZE / 1.2)))
         self.white_piece_image = pygame.image.load('assets/piece2.png').convert_alpha()
-        self.white_piece_image = pygame.transform.scale(self.white_piece_image, (self.CELL_SIZE / 1.2, self.CELL_SIZE / 1.2 ))
-
+        self.white_piece_image = pygame.transform.scale(self.white_piece_image, (int(self.CELL_SIZE / 1.2), int(self.CELL_SIZE / 1.2)))
 
     def draw_board(self, board):
         self.display.fill(self.WHITE)
@@ -126,12 +136,18 @@ class Grid:
                 rect = pygame.Rect(col * self.CELL_SIZE, row * self.CELL_SIZE, self.CELL_SIZE, self.CELL_SIZE)
                 pygame.draw.rect(self.display, self.BLACK, rect, 1)
                 if board[row][col] == 1:
-                    # Calculate position to center the piece
-                    x_pos = col * self.CELL_SIZE + (self.CELL_SIZE - self.black_piece_image.get_width()) // 2
-                    y_pos = row * self.CELL_SIZE + (self.CELL_SIZE - self.black_piece_image.get_height()) // 2
-                    self.display.blit(self.black_piece_image, (x_pos, y_pos))
+                    self.draw_piece(self.black_piece_image, row, col)
                 elif board[row][col] == -1:
-                    # Calculate position to center the piece
-                    x_pos = col * self.CELL_SIZE + (self.CELL_SIZE - self.white_piece_image.get_width()) // 2
-                    y_pos = row * self.CELL_SIZE + (self.CELL_SIZE - self.white_piece_image.get_height()) // 2
-                    self.display.blit(self.white_piece_image, (x_pos, y_pos))
+                    self.draw_piece(self.white_piece_image, row, col)
+
+    def draw_piece(self, piece_image, row, col):
+        x_pos = col * self.CELL_SIZE + (self.CELL_SIZE - piece_image.get_width()) // 2
+        y_pos = row * self.CELL_SIZE + (self.CELL_SIZE - piece_image.get_height()) // 2
+        self.display.blit(piece_image, (x_pos, y_pos))
+
+    def draw_valid_moves(self, valid_moves):
+        for move in valid_moves:
+            row, col = move
+            x = col * self.CELL_SIZE + self.CELL_SIZE // 2
+            y = row * self.CELL_SIZE + self.CELL_SIZE // 2
+            pygame.draw.circle(self.display, (0, 255, 0), (x, y), self.CELL_SIZE // 5, 3)
