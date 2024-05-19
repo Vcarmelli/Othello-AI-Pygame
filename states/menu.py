@@ -4,7 +4,7 @@ class Menu:
     def __init__(self, display, gameStateManager):
         self.display = display
         self.gameStateManager = gameStateManager
-        self.image = pygame.image.load('assets/bg.jpg')
+        self.image = pygame.image.load('./assets/boardbg.png')
         self.image = pygame.transform.scale(self.image, (self.display.get_width(), self.display.get_height()))
         self.font = pygame.font.Font(None, 36) 
 
