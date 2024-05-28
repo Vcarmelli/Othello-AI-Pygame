@@ -43,7 +43,7 @@ class AiPlayerInterface(Player):
         print(f"Subprocess PID: {self.process.pid}")
         self.name = name
         
-        print("f'{color},{limit},{m},{c},{o}\n")
+        print(f"{color},{limit},{m},{c},{o}\n")
         self.process.stdin.write(f"{color},{limit},{m},{c},{o}\n".encode("ASCII"))
         self.process.stdin.flush()
 
@@ -55,6 +55,7 @@ class AiPlayerInterface(Player):
     def get_move(self, manager):
         white_score, dark_score = get_score(manager.board)
         print(f"SCORES: {white_score} {dark_score}\n")
+        #print(f"BOARD: {manager.board}\n")
         
         self.process.stdin.write(f"SCORE {white_score} {dark_score}\n".encode("ASCII"))
         self.process.stdin.flush()
@@ -68,6 +69,7 @@ class AiPlayerInterface(Player):
 
         # Wait for the AI call
         move_s = self.process.stdout.readline().decode("ASCII")
+        print("MOVE_S:", move_s)
         if self.timed_out:  
             raise AiTimeoutError
         timer.cancel()
@@ -84,7 +86,7 @@ class AiPlayerInterface(Player):
 
 class OthelloGameManager(object):
 
-    def __init__(self, dimension = 6):
+    def __init__(self, dimension = 8):
 
         self.dimension = dimension
         self.board = self.create_initial_board()
