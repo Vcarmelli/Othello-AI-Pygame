@@ -32,20 +32,20 @@ class AiPlayerInterface(Player):
     def __init__(self, filename, color, limit, minimax = False, caching = False, ordering = False):
         
         #convert params to numbers 
-        m = 0 
-        if minimax == True: m = 1
-        c = 0 
-        if caching == True: c = 1
-        o = 0 
-        if ordering == True: o = 1
+        m = 1 if minimax else 0
+        c = 1 if caching else 0
+        o = 1 if ordering else 0
 
-        self.color = color
         self.process = subprocess.Popen([sys.executable, filename], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         name = self.process.stdout.readline().decode("ASCII").strip()
         print("AI introduced itself as: {}".format(name))
+
+        print(f"Subprocess PID: {self.process.pid}")
         self.name = name
+        
+        print("f'{color},{limit},{m},{c},{o}\n")
+        self.process.stdin.write(f"{color},{limit},{m},{c},{o}\n".encode("ASCII"))
         self.process.stdin.flush()
-        self.process.stdin.write(((str(color) + "," + str(limit) + "," + str(m) + "," + str(c) + "," + str(o) + "\n").encode("ASCII")))
 
     def timeout(self): 
         sys.stderr.write("{} timed out.".format(self.name))
@@ -54,10 +54,11 @@ class AiPlayerInterface(Player):
 
     def get_move(self, manager):
         white_score, dark_score = get_score(manager.board)
-        print((white_score, dark_score))
-        self.process.stdin.write("SCORE {} {}\n".format(white_score, dark_score).encode("ASCII"))
+        print(f"SCORES: {white_score} {dark_score}\n")
+        
+        self.process.stdin.write(f"SCORE {white_score} {dark_score}\n".encode("ASCII"))
         self.process.stdin.flush()
-        self.process.stdin.write("{}\n".format(str(manager.board)).encode("ASCII"))
+        self.process.stdin.write(f"{manager.board}\n".encode("ASCII"))
         self.process.stdin.flush()
         
 
@@ -67,7 +68,6 @@ class AiPlayerInterface(Player):
 
         # Wait for the AI call
         move_s = self.process.stdout.readline().decode("ASCII")
-        print("move_s", move_s)
         if self.timed_out:  
             raise AiTimeoutError
         timer.cancel()
@@ -76,7 +76,7 @@ class AiPlayerInterface(Player):
         j = int(j_s)
         return i,j 
     
-    def kill(self,manager):
+    def kill(self, manager):
         white_score, dark_score = get_score(manager.board)
         self.process.stdin.write("FINAL {} {}\n".format(white_score, dark_score).encode("ASCII"))
         self.process.kill() 

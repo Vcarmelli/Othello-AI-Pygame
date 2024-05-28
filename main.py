@@ -50,7 +50,7 @@ def main(argv=None):
 
     if size <= 0:  # if no dimension provided
         print('Please provide a board size.')
-        print('othello_gui.py -d <dimension> [-a <agentA> -b <agentB> -l <depth-limit> -c -o]')
+        print('main.py -d <dimension> [-a <agentA> -b <agentB> -l <depth-limit> -c -o]')
         sys.exit(2)
 
     if agent1 is not None and agent2 is not None and size > 0:
