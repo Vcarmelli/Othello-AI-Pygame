@@ -26,6 +26,8 @@ def main(argv=None):
 
     try:
         opts, args = getopt.getopt(argv, "hcmol:d:a:b:", ["limit=", "dimension=", "agent1=", "agent2="])
+        print("opts:", opts)
+        print("args:", args)
     except getopt.GetoptError:
         print('main.py -d <dimension> [-a <agentA> -b <agentB> -l <depth-limit> -c -o -m]')
         sys.exit(2)
@@ -56,12 +58,29 @@ def main(argv=None):
     if agent1 is not None and agent2 is not None and size > 0:
         p1 = AiPlayerInterface(agent1, 1, limit, minimax, caching, ordering)
         p2 = AiPlayerInterface(agent2, 2, limit, minimax, caching, ordering)
+        # print("ai v ai")
+        # print("limit:", limit)
+        # print("minimax:", minimax)
+        # print("caching:", caching)
+        # print("ordering:", ordering)
+    
     elif agent1 is not None and size > 0:
         p1 = Player(1)
         p2 = AiPlayerInterface(agent1, 2, limit, minimax, caching, ordering)
+        # print("PV AI")
+        # print("limit:", limit)
+        # print("minimax:", minimax)
+        # print("caching:", caching)
+        # print("ordering:", ordering)
+
     else:
         p1 = Player(1)
         p2 = Player(2)
+        # print("PVP")
+        # print("limit:", limit)
+        # print("minimax:", minimax)
+        # print("caching:", caching)
+        # print("ordering:", ordering)
 
     game = OthelloGameManager(size)
     gui = OthelloGui(game, p1, p2)

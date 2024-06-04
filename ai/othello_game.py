@@ -41,6 +41,7 @@ class AiPlayerInterface(Player):
         print("AI introduced itself as: {}".format(name))
 
         print(f"Subprocess PID: {self.process.pid}")
+        
         self.name = name
         
         print(f"{color},{limit},{m},{c},{o}\n")
@@ -54,7 +55,7 @@ class AiPlayerInterface(Player):
 
     def get_move(self, manager):
         white_score, dark_score = get_score(manager.board)
-        print(f"SCORES: {white_score} {dark_score}\n")
+        print(f"SCORE: W -> {white_score} B -> {dark_score}\n")
         #print(f"BOARD: {manager.board}\n")
         
         self.process.stdin.write(f"SCORE {white_score} {dark_score}\n".encode("ASCII"))
@@ -79,6 +80,7 @@ class AiPlayerInterface(Player):
         return i,j 
     
     def kill(self, manager):
+        print("Subprocess KILL")
         white_score, dark_score = get_score(manager.board)
         self.process.stdin.write("FINAL {} {}\n".format(white_score, dark_score).encode("ASCII"))
         self.process.kill() 
@@ -86,11 +88,29 @@ class AiPlayerInterface(Player):
 
 class OthelloGameManager(object):
 
-    def __init__(self, dimension = 8):
-
-        self.dimension = dimension
+    def __init__(self, current_state):
+        self.dimension = 8
         self.board = self.create_initial_board()
         self.current_player = 1
+        self.current_state = current_state
+        self.black_score = 0
+        self.white_score = 0
+
+    def clear_game(self):
+        self.black_score = 0
+        self.white_score = 0
+        self.board = self.create_initial_board()
+        self.current_player = 1
+
+    def get_state(self):
+        return self.current_state
+    
+    def set_state(self, state):
+        self.current_state = state
+
+    def set_scores(self, black_score, white_score):
+        self.black_score = black_score
+        self.white_score = white_score
             
     def create_initial_board(self):
         board = []
