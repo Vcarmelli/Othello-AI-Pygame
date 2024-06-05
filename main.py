@@ -1,90 +1,68 @@
-# from states.game import Game
-
-# if __name__ == "__main__":
-#     game = Game()
-#     game.run()
-
 import sys
-import getopt
 import pygame
 from ai.othello_game import OthelloGameManager, AiPlayerInterface, Player, InvalidMoveError, AiTimeoutError
-from ai.othello_shared import get_possible_moves
-from ai.othello_gui import OthelloGui
+from ai.othello_gui import OthelloGui, Menu, Setup, GameOver
 
-def main(argv=None):
-    # Default values
-    size = 8
-    limit = 5
-    ordering = True
-    caching = False
-    minimax = False
-    agent1 = "agent_mcts.py"
-    agent2 = "agent.py"
 
-    if argv is None:
-        argv = []
+class Game:
+    def __init__(self):
+        screenwidth = 600
+        screenheight = 600
 
-    try:
-        opts, args = getopt.getopt(argv, "hcmol:d:a:b:", ["limit=", "dimension=", "agent1=", "agent2="])
-        print("opts:", opts)
-        print("args:", args)
-    except getopt.GetoptError:
-        print('main.py -d <dimension> [-a <agentA> -b <agentB> -l <depth-limit> -c -o -m]')
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print('main.py -d <dimension> -a <agentA> [-b <agentB> -l <depth-limit> -c -o]')
-            sys.exit()
-        elif opt in ("-d", "--dimension"):
-            size = int(arg)
-        elif opt in ("-a", "--agentA"):
-            agent1 = arg
-        elif opt in ("-b", "--agentB"):
-            agent2 = arg
-        elif opt in ("-c", "--caching"):
-            caching = True
-        elif opt in ("-m", "--minimax"):
-            minimax = True
-        elif opt in ("-o", "--ordering"):
-            ordering = True
-        elif opt in ("-l", "--limit"):
-            limit = int(arg)
+        pygame.init()
+        self.screen = pygame.display.set_mode((screenwidth, screenheight))
+        self.gameStateManager = OthelloGameManager(self.screen, 'menu')
 
-    if size <= 0:  # if no dimension provided
-        print('Please provide a board size.')
-        print('main.py -d <dimension> [-a <agentA> -b <agentB> -l <depth-limit> -c -o]')
-        sys.exit(2)
+        self.menu = Menu(self.screen, self.gameStateManager)
+        self.setup = Setup(self.screen, self.gameStateManager)
+        self.game = OthelloGui(self.screen, self.gameStateManager)
+        self.over = GameOver(self.screen, self.gameStateManager)
 
-    if agent1 is not None and agent2 is not None and size > 0:
-        p1 = AiPlayerInterface(agent1, 1, limit, minimax, caching, ordering)
-        p2 = AiPlayerInterface(agent2, 2, limit, minimax, caching, ordering)
-        # print("ai v ai")
-        # print("limit:", limit)
-        # print("minimax:", minimax)
-        # print("caching:", caching)
-        # print("ordering:", ordering)
-    
-    elif agent1 is not None and size > 0:
-        p1 = Player(1)
-        p2 = AiPlayerInterface(agent1, 2, limit, minimax, caching, ordering)
-        # print("PV AI")
-        # print("limit:", limit)
-        # print("minimax:", minimax)
-        # print("caching:", caching)
-        # print("ordering:", ordering)
+        self.state = {
+            'menu': self.menu,
+            'setup': self.setup,
+            'game': self.game,
+            'over': self.over
+        }
+        
+        self.menu = None
 
-    else:
-        p1 = Player(1)
-        p2 = Player(2)
-        # print("PVP")
-        # print("limit:", limit)
-        # print("minimax:", minimax)
-        # print("caching:", caching)
-        # print("ordering:", ordering)
 
-    game = OthelloGameManager(size)
-    gui = OthelloGui(game, p1, p2)
-    gui.run()
+    def init_players(self, first_player):
+        mcts = "agent_mcts.py"
+        ab = "agent.py"
+
+        self.p1, self.p2 = (
+                 (AiPlayerInterface(mcts, 1), AiPlayerInterface(ab, 2)) if first_player == 'mcts' 
+            else (AiPlayerInterface(ab, 1), AiPlayerInterface(mcts, 2))
+        )
+        
+
+    def run(self):   
+        self.screen.blit(self.gameStateManager.img.setup_bg, (0, 0))
+
+        while True:
+            curr_state = self.gameStateManager.get_state()           
+
+            if curr_state == 'menu':
+                self.gameStateManager.clear_game()
+            elif curr_state == 'game':
+                if not self.game.playing:
+                    self.init_players(self.gameStateManager.first_player)
+                    self.game.set_players(self.p1, self.p2)
+            
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            self.state[curr_state].run()
+            print("curr_state: ", curr_state)
+
+            pygame.display.flip()
+
 
 if __name__ == "__main__":
-    main()
+    game = Game()
+    game.run()
