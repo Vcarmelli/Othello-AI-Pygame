@@ -1,21 +1,18 @@
 import sys
 import pygame
 from ai.othello_game import OthelloGameManager, AiPlayerInterface, Player, InvalidMoveError, AiTimeoutError
-from ai.othello_shared import get_possible_moves
-from ai.othello_gui import OthelloGui, Images, Menu, Setup, GameOver
+from ai.othello_gui import OthelloGui, Menu, Setup, GameOver
 
 
 class Game:
     def __init__(self):
-        self.screenwidth = 600
-        self.screenheight = 600
-        self.gameStateManager = OthelloGameManager('menu')
-        self.menu = None
+        screenwidth = 600
+        screenheight = 600
 
-        self.init_players()
+        pygame.init()
+        self.screen = pygame.display.set_mode((screenwidth, screenheight))
+        self.gameStateManager = OthelloGameManager(self.screen, 'menu')
 
-    def init_display(self):
-        self.img = Images(self.screen)
         self.menu = Menu(self.screen, self.gameStateManager)
         self.setup = Setup(self.screen, self.gameStateManager)
         self.game = OthelloGui(self.screen, self.gameStateManager)
@@ -28,6 +25,10 @@ class Game:
             'over': self.over
         }
         
+        self.menu = None
+
+        self.init_players()
+
 
     def init_players(self):
         size = 8
@@ -42,20 +43,17 @@ class Game:
         
 
     def run(self):   
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.screenwidth, self.screenheight))
-        if  self.menu is None:
-            self.init_display()
-        
-        self.screen.blit(self.img.setup_bg, (0, 0))
+        self.screen.blit(self.gameStateManager.img.setup_bg, (0, 0))
 
         while True:
-            print("self.gameStateManager.get_state(): ", self.gameStateManager.get_state())
-            if self.gameStateManager.get_state() == 'menu':
+            curr_state = self.gameStateManager.get_state()           
+
+            if curr_state == 'menu':
                 self.gameStateManager.clear_game()
-            elif self.gameStateManager.get_state() == 'game':
-                self.init_players()
-                self.game.set_players(self.p1, self.p2)
+            elif curr_state == 'game':
+                if not self.game.playing:
+                    self.init_players()
+                    self.game.set_players(self.p1, self.p2)
             
             
             for event in pygame.event.get():
@@ -63,8 +61,8 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
-
-            self.state[self.gameStateManager.get_state()].run()
+            self.state[curr_state].run()
+            print("curr_state: ", curr_state)
 
             pygame.display.flip()
 
