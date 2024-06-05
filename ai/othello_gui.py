@@ -1,6 +1,6 @@
 import sys
 import pygame
-from states.display import Button, Draw
+from ai.display import Button, Draw
 from ai.othello_game import AiPlayerInterface, Player, InvalidMoveError, AiTimeoutError
 from ai.othello_shared import get_possible_moves, get_score
 
@@ -85,9 +85,9 @@ class OthelloGui:
             print("Dark Score:", dark_score)    
             print("Light Score:", light_score)
             if dark_score > light_score:
-                self.shutdown("Game Over, Dark wins! (MCTS)")
+                self.shutdown("Game Over, Dark wins!")
             elif light_score > dark_score:
-                self.shutdown("Game Over, Light wins! (MNM)")
+                self.shutdown("Game Over, Light wins!")
             else:
                 self.shutdown("Game Over, It's a draw!")
 
@@ -101,13 +101,17 @@ class OthelloGui:
         try:
             i, j = player_obj.get_move(self.game)
 
-            player = "Dark" if self.game.current_player == 1 else "Light"
-            player = f"{player_obj.name} {player}"
-            print(f"{player} MOVE: {i},{j}")
+            player = "Black" if self.game.current_player == 1 else "White"
+            print(f"{player_obj.name} ({player}): {i},{j}")
 
             self.game.play(i, j)
             self.draw_board()
-            pygame.display.flip()
+            
+            light_score, dark_score = get_score(self.game.board)
+            self.game.draw.text(None, f"{player_obj.name} ({player}) move to ({i}, {j})", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 1 - 90))
+            self.game.draw.text(None, f"BLACK: {dark_score}   WHITE: {light_score}", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 1 - 50))
+            pygame.time.delay(900)
+            pygame.display.update()
 
             if not get_possible_moves(self.game.board, self.game.current_player):
                 self.check_game_over()
@@ -170,22 +174,34 @@ class Setup:
         pygame.display.set_caption("MCTS vs Alpha Beta")
 
         self.game.draw.text(None, "This is the simulation of two AI", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 4))
-        self.game.draw.text(None, "The Monte Carlo vs Alpha Beta", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3))
+        self.game.draw.text(None, "The Monte Carlo Search Tree", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3))
+        self.game.draw.text(None, "and", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3 + 35))
+        self.game.draw.text(None, "Minimax with Alpha Beta Pruning", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3 + 70))
 
+        self.game.draw.text(None, "Select which algorithm will move first", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 2 + 70))
         MOUSE_POS = pygame.mouse.get_pos()
 
-        setup_btn = Button(None, (self.screen.get_width() // 2, self.screen.get_height() // 2), 
-                            "AI vs AI", BTN_COLOR, BTN_HOVER_COLOR)
+        mcts_btn = Button(None, (self.screen.get_width() // 2 - 70, self.screen.get_height() // 2 + 120), 
+                            "MCTS", BTN_COLOR, BTN_HOVER_COLOR)
         
-        setup_btn.update_color(MOUSE_POS)
-        setup_btn.draw_button(self.screen)
+        ab_btn = Button(None, (self.screen.get_width() // 2 + 70, self.screen.get_height() // 2 + 120), 
+                            "MINIMAX", BTN_COLOR, BTN_HOVER_COLOR)
+        
+
+        for button in [mcts_btn, ab_btn]:
+            button.update_color(MOUSE_POS)
+            button.draw_button(self.screen)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if setup_btn.click_button(MOUSE_POS):
+                if mcts_btn.click_button(MOUSE_POS):
+                    self.game.first_player = 'mcts'                    
+                    self.game.set_state('game')
+                if ab_btn.click_button(MOUSE_POS):
+                    self.game.first_player = 'ab'
                     self.game.set_state('game')
                     
         pygame.display.update()
@@ -199,8 +215,11 @@ class GameOver:
     def run(self):
         self.screen.blit(self.game.img.setup_bg, (0, 0))
 
-        self.game.draw.text(None, f"MCTS Score: {self.game.black_score}", (255, 255, 255), (self.screen.get_width() // 2, self.screen.get_height() // 6 + 50))
-        self.game.draw.text(None, f"MINIMAX Score: {self.game.white_score}", (255, 255, 255), (self.screen.get_width() // 2, self.screen.get_height() // 5))
+        mcts_score = self.game.black_score if self.game.first_player == 'mcts' else self.game.white_score
+        ab_score = self.game.white_score if self.game.first_player == 'mcts' else self.game.black_score
+
+        self.game.draw.text(None, f"MCTS Score: {mcts_score}", (255, 255, 255), (self.screen.get_width() // 2, self.screen.get_height() // 6 + 50))
+        self.game.draw.text(None, f"MINIMAX Score: {ab_score}", (255, 255, 255), (self.screen.get_width() // 2, self.screen.get_height() // 5))
 
         MOUSE_POS = pygame.mouse.get_pos()
 

@@ -305,8 +305,7 @@ def alphabeta_min_node(board, color, alpha, beta, limit, caching = 0, ordering =
     for moves in allMoves:
         nextState = play_move(board, opposingColor, moves[0], moves[1])
 
-        #utility = minimax_max_node(nextState, color, limit-1, caching)[1]
-        utility = alphabeta_max_node(nextState, color, alpha, beta, limit-1, caching, ordering)[1]
+        utility = minimax_max_node(nextState, color, limit-1, caching)[1]
 
         if(utility < minUtility):
             worstMove = moves
@@ -366,8 +365,7 @@ def alphabeta_max_node(board, color, alpha, beta, limit, caching = 0, ordering =
 
         #Determining the color of the other player, and traversing accordingly
         #We only care about the utility value, hence the [1]
-        #utility = minimax_min_node(nextState, color, limit-1, caching)[1]
-        utility = alphabeta_min_node(nextState, color, alpha, beta, limit-1, caching, ordering)[1]
+        utility = minimax_min_node(nextState, color, limit-1, caching)[1]
 
     #Step 3: Update max value
         if(utility > maxUtility):
@@ -443,28 +441,31 @@ def run_ai():
         # Read in the current game status, for example:
         # "SCORE 2 2" or "FINAL 33 31" if the game is over.
         # The first number is the score for player 1 (dark), the second for player 2 (light)
-        next_input = input()
-        status, dark_score_s, light_score_s = next_input.strip().split()
-        dark_score = int(dark_score_s)
-        light_score = int(light_score_s)
+        try:
+            next_input = input()
+            status, dark_score_s, light_score_s = next_input.strip().split()
+            dark_score = int(dark_score_s)
+            light_score = int(light_score_s)
 
-        if status == "FINAL": # Game is over.
-            print
-        else:
-            board = eval(input()) # Read in the input and turn it into a Python
-                                  # object. The format is a list of rows. The
-                                  # squares in each row are represented by
-                                  # 0 : empty square
-                                  # 1 : dark disk (player 1)
-                                  # 2 : light disk (player 2)
+            if status == "FINAL": # Game is over.
+                print
+            else:
+                board = eval(input()) # Read in the input and turn it into a Python
+                                    # object. The format is a list of rows. The
+                                    # squares in each row are represented by
+                                    # 0 : empty square
+                                    # 1 : dark disk (player 1)
+                                    # 2 : light disk (player 2)
 
-            # Select the move and send it to the manager
-            if (minimax == 1): #run this if the minimax flag is given
-                movei, movej = select_move_minimax(board, color, limit, caching)
-            else: #else run alphabeta
-                movei, movej = select_move_alphabeta(board, color, limit, caching, ordering)
-            
-            print("{} {}".format(movei, movej))
+                # Select the move and send it to the manager
+                if (minimax == 1): #run this if the minimax flag is given
+                    movei, movej = select_move_minimax(board, color, limit, caching)
+                else: #else run alphabeta
+                    movei, movej = select_move_alphabeta(board, color, limit, caching, ordering)
+                
+                print("{} {}".format(movei, movej))
+        except Exception as e:
+            print("Err:", e)
 
 if __name__ == "__main__":
     run_ai()

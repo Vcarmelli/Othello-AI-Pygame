@@ -344,7 +344,7 @@ def run_mcts():
     arguments = input().split(",")
 
     color = int(arguments[0])  # Player color: 1 for dark (goes first), 2 for light.
-    limit = 700  # Iteration limit
+    limit = int(arguments[1])  # Iteration limit
     minimax = int(arguments[2])  # not used here
     caching = int(arguments[3])  # not used here
     ordering = int(arguments[4])  # not used here
@@ -352,7 +352,7 @@ def run_mcts():
     if (limit == -1):
         eprint("Iteration Limit is OFF")
     else:
-        eprint("Iteration Limit is ", limit)
+        eprint("Iteration Limit is", limit)
 
     if (minimax == 1 and ordering == 1): eprint("Node Ordering should have no impact on Minimax")
 
@@ -360,25 +360,29 @@ def run_mcts():
         # Read in the current game status, for example:
         # "SCORE 2 2" or "FINAL 33 31" if the game is over.
         # The first number is the score for player 1 (dark), the second for player 2 (light)
-        next_input = input()
-        status, dark_score_s, light_score_s = next_input.strip().split()
-        dark_score = int(dark_score_s)
-        light_score = int(light_score_s)
+        try:
+            next_input = input()
+            status, dark_score_s, light_score_s = next_input.strip().split()
+            dark_score = int(dark_score_s)
+            light_score = int(light_score_s)
+        
 
-        if status == "FINAL":  # Game is over.
-            print
-        else:
-            board = eval(input())  # Read in the input and turn it into a Python
-            # object. The format is a list of rows. The
-            # squares in each row are represented by
-            # 0 : empty square
-            # 1 : dark disk (player 1)
-            # 2 : light disk (player 2)
+            if status == "FINAL":  # Game is over.
+                print
+            else:
+                board = eval(input())  # Read in the input and turn it into a Python
+                # object. The format is a list of rows. The
+                # squares in each row are represented by
+                # 0 : empty square
+                # 1 : dark disk (player 1)
+                # 2 : light disk (player 2)
 
-            # Select the move and send it to the manager
-            movei, movej = select_move_MCTS(board, color, limit)
+                # Select the move and send it to the manager
+                movei, movej = select_move_MCTS(board, color, limit)
 
-            print("{} {}".format(movei, movej))
+                print("{} {}".format(movei, movej))
+        except Exception as e:
+            print("Err:", e)
             
             
 if __name__ == "__main__":

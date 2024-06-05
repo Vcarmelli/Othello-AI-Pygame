@@ -27,19 +27,15 @@ class Game:
         
         self.menu = None
 
-        self.init_players()
 
+    def init_players(self, first_player):
+        mcts = "agent_mcts.py"
+        ab = "agent.py"
 
-    def init_players(self):
-        size = 8
-        limit = 5
-        ordering = True
-        caching = False
-        minimax = False
-        agent1 = "agent_mcts.py"
-        agent2 = "agent.py"
-        self.p1 = AiPlayerInterface(agent1, 1, limit, minimax, caching, ordering)
-        self.p2 = AiPlayerInterface(agent2, 2, limit, minimax, caching, ordering)
+        self.p1, self.p2 = (
+                 (AiPlayerInterface(mcts, 1), AiPlayerInterface(ab, 2)) if first_player == 'mcts' 
+            else (AiPlayerInterface(ab, 1), AiPlayerInterface(mcts, 2))
+        )
         
 
     def run(self):   
@@ -52,7 +48,7 @@ class Game:
                 self.gameStateManager.clear_game()
             elif curr_state == 'game':
                 if not self.game.playing:
-                    self.init_players()
+                    self.init_players(self.gameStateManager.first_player)
                     self.game.set_players(self.p1, self.p2)
             
             

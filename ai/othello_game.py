@@ -9,7 +9,7 @@ Thanks to original author Daniel Bauer, Columbia University
 import sys
 import subprocess
 from threading import Timer
-from states.display import Images, Draw
+from ai.display import Images, Draw
 from ai.othello_shared import find_lines, get_possible_moves, play_move, get_score
 
 class InvalidMoveError(RuntimeError):
@@ -30,23 +30,22 @@ class AiPlayerInterface(Player):
 
     TIMEOUT = 60
 
-    def __init__(self, filename, color, limit, minimax = False, caching = False, ordering = False):
+    def __init__(self, filename, player):
         
-        #convert params to numbers 
-        m = 1 if minimax else 0
-        c = 1 if caching else 0
-        o = 1 if ordering else 0
+        l = 5   #limit
+        m = 0   #minimax
+        c = 0   #caching
+        o = 1   #ordering
 
         self.process = subprocess.Popen([sys.executable, filename], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         name = self.process.stdout.readline().decode("ASCII").strip()
         print("AI introduced itself as: {}".format(name))
-
-        print(f"Subprocess PID: {self.process.pid}")
+        #print(f"Subprocess PID: {self.process.pid}")
         
         self.name = name
         
-        print(f"{color},{limit},{m},{c},{o}\n")
-        self.process.stdin.write(f"{color},{limit},{m},{c},{o}\n".encode("ASCII"))
+        print(f"{player},{l},{m},{c},{o}\n")
+        self.process.stdin.write(f"{player},{l},{m},{c},{o}\n".encode("ASCII"))
         self.process.stdin.flush()
 
     def timeout(self): 
@@ -98,6 +97,7 @@ class OthelloGameManager(object):
         self.white_score = 0
         self.img = Images(screen)
         self.draw = Draw(screen)
+        self.first_player = 'mcts'
 
     def clear_game(self):
         self.black_score = 0
@@ -142,6 +142,7 @@ class OthelloGameManager(object):
         if self.board[j][i] != 0:
            raise InvalidMoveError("Occupied square.")
         lines = find_lines(self.board, i,j, self.current_player)
+        
         if not lines:  
            raise InvalidMoveError("Invalid Move.")
      
