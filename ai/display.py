@@ -7,18 +7,19 @@ class Fonts:
 
 class Images:
     def __init__(self, screen):
-        cell_size = 60
+        cell_size = 80
 
         self.black_piece = pygame.image.load('assets/piece1.png')
         self.black_piece = pygame.transform.scale(self.black_piece, (int(cell_size / 1.2), int(cell_size / 1.2)))
         self.white_piece = pygame.image.load('assets/piece2.png')
         self.white_piece = pygame.transform.scale(self.white_piece, (int(cell_size / 1.2), int(cell_size / 1.2)))
 
-        self.menu_bg = pygame.image.load('assets/index.png')
+        self.menu_bg = pygame.image.load('assets/index.jpg')
         self.menu_bg = pygame.transform.scale(self.menu_bg, (screen.get_width(), screen.get_height()))
-        self.setup_bg = pygame.image.load('assets/boardbg.png')
+        self.setup_bg = pygame.image.load('assets/boardbg.jpg')
         self.setup_bg = pygame.transform.scale(self.setup_bg, (screen.get_width(), screen.get_height()))
-
+        self.game_bg = pygame.image.load('assets/board.jpg')
+        self.game_bg = pygame.transform.scale(self.game_bg, (screen.get_width(), screen.get_height()))
 
 class Draw:
     def __init__(self, screen):

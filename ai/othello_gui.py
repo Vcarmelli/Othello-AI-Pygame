@@ -23,7 +23,7 @@ class OthelloGui:
         self.playing = True
 
     def run(self):
-        self.screen.blit(self.game.img.setup_bg, (0, 0))
+        self.screen.blit(self.game.img.game_bg, (0, 0))
         
         # FOR HUMAN PLAYER
         # for event in pygame.event.get():
@@ -97,6 +97,9 @@ class OthelloGui:
 
 
     def ai_move(self):
+        meduim_font = pygame.font.Font(None, 40)  
+        large_font = pygame.font.Font(None, 48)  
+        larger_font = pygame.font.Font(None, 300)  
         player_obj = self.players[self.game.current_player]
         try:
             i, j = player_obj.get_move(self.game)
@@ -108,8 +111,15 @@ class OthelloGui:
             self.draw_board()
             
             light_score, dark_score = get_score(self.game.board)
-            self.game.draw.text(None, f"{player_obj.name} ({player}) move to ({i}, {j})", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 1 - 90))
-            self.game.draw.text(None, f"BLACK: {dark_score}   WHITE: {light_score}", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 1 - 50))
+
+            self.screen.blit(meduim_font.render(f"{player_obj.name} ({player}) move to ({i}, {j})", True, WHITE), (45, self.screen.get_height() - 180))
+            
+            score_middle_y = (self.screen.get_height() - 50) // 2
+            x_position = 50 
+            self.screen.blit(large_font.render(f"BLACK", True, WHITE), (x_position + 35, score_middle_y - 245))
+            self.screen.blit(larger_font.render(f"{dark_score}", True, WHITE), (x_position + 10, score_middle_y -140))
+            self.screen.blit(large_font.render(f"WHITE", True, WHITE), (x_position + 375, score_middle_y - 245))
+            self.screen.blit(larger_font.render(f"{light_score}", True, WHITE), (x_position + 350, score_middle_y -140))
             pygame.time.delay(900)
             pygame.display.update()
 
@@ -119,28 +129,39 @@ class OthelloGui:
             self.shutdown(f"Game Over, {player_obj.name} lost (timeout)")
         
     def draw_board(self):
-        self.screen.blit(self.game.img.setup_bg, (0, 0))
-        self.draw_grid()
-        self.draw_disks()
+        self.screen.blit(self.game.img.game_bg, (0, 0))
+        
+        new_width = 700
+        
+        new_cell_size = new_width // self.game.dimension
+        
+        total_height = self.game.dimension * new_cell_size
 
-    def draw_grid(self):
-        for i in range(self.game.dimension):
-            for j in range(self.game.dimension):
-                pygame.draw.rect(self.screen, (0, 0, 0), (i * self.cell_size, j * self.cell_size, self.cell_size, self.cell_size), 1)
+        start_x = self.screen.get_width() - new_width - 100  
+        
+        start_y = (self.screen.get_height() - total_height) // 2
 
-    def draw_disk(self, i, j, color_image):
-        x = i * self.cell_size + (self.cell_size - color_image.get_width()) // 2
-        y = j * self.cell_size + (self.cell_size - color_image.get_height()) // 2
-        self.screen.blit(color_image, (x, y))
+        self.draw_grid(start_x, start_y, self.game.dimension, new_cell_size)
+        
+        self.draw_disks(start_x, start_y, self.game.dimension, new_cell_size)
 
-    def draw_disks(self):
-        for i in range(self.game.dimension):
-            for j in range(self.game.dimension):
-                if self.game.board[i][j] == 1:
-                    self.draw_disk(j, i, self.game.img.black_piece)
-                elif self.game.board[i][j] == 2:
-                    self.draw_disk(j, i, self.game.img.white_piece)
+    def draw_grid(self, start_x, start_y, dimension, cell_size):
+        for i in range(dimension):
+            for j in range(dimension):
+                pygame.draw.rect(self.screen, (0, 0, 0), 
+                                (start_x + i * cell_size, start_y + j * cell_size, 
+                                cell_size, cell_size), 1)
 
+    def draw_disks(self, start_x, start_y, dimension, cell_size):
+        # Example implementation of drawing disks
+        for i in range(dimension):
+            for j in range(dimension):
+                if self.game.board[i][j] != 0:  # Assuming 0 means no disk
+                    color = (255, 255, 255) if self.game.board[i][j] == 1 else (0, 0, 0)
+                    pygame.draw.circle(self.screen, color, 
+                                    (start_x + i * cell_size + cell_size // 2, 
+                                        start_y + j * cell_size + cell_size // 2), 
+                                    cell_size // 2 - 5)
 
 
 
@@ -170,22 +191,19 @@ class Setup:
         self.game = gameStateManager
 
     def run(self):
+        mcts_image = pygame.image.load("assets/MCTS.png")
+        minimax_image = pygame.image.load("assets/MINIMAX.png")
+
+        mcts_image = pygame.transform.scale(mcts_image, (290, 100))
+        minimax_image = pygame.transform.scale(minimax_image, (290, 100))
+
         self.screen.blit(self.game.img.setup_bg, (0, 0))
-        pygame.display.set_caption("MCTS vs Alpha Beta")
-
-        self.game.draw.text(None, "This is the simulation of two AI", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 4))
-        self.game.draw.text(None, "The Monte Carlo Search Tree", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3))
-        self.game.draw.text(None, "and", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3 + 35))
-        self.game.draw.text(None, "Minimax with Alpha Beta Pruning", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3 + 70))
-
-        self.game.draw.text(None, "Select which algorithm will move first", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 2 + 70))
         MOUSE_POS = pygame.mouse.get_pos()
 
-        mcts_btn = Button(None, (self.screen.get_width() // 2 - 70, self.screen.get_height() // 2 + 120), 
-                            "MCTS", BTN_COLOR, BTN_HOVER_COLOR)
-        
-        ab_btn = Button(None, (self.screen.get_width() // 2 + 70, self.screen.get_height() // 2 + 120), 
-                            "MINIMAX", BTN_COLOR, BTN_HOVER_COLOR)
+        mcts_btn = Button(mcts_image, (self.screen.get_width() // 2 - 300, self.screen.get_height() // 2 + 200), 
+                        None, BTN_COLOR, BTN_HOVER_COLOR)
+        ab_btn = Button(minimax_image, (self.screen.get_width() // 2 + 300, self.screen.get_height() // 2 + 200), 
+                        None, BTN_COLOR, BTN_HOVER_COLOR)
         
 
         for button in [mcts_btn, ab_btn]:
@@ -213,7 +231,7 @@ class GameOver:
         self.game = gameStateManager
     
     def run(self):
-        self.screen.blit(self.game.img.setup_bg, (0, 0))
+        self.screen.blit(self.game.img.game_bg, (0, 0))
 
         mcts_score = self.game.black_score if self.game.first_player == 'mcts' else self.game.white_score
         ab_score = self.game.white_score if self.game.first_player == 'mcts' else self.game.black_score

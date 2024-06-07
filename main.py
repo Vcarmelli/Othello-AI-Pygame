@@ -6,8 +6,8 @@ from ai.othello_gui import OthelloGui, Menu, Setup, GameOver
 
 class Game:
     def __init__(self):
-        screenwidth = 600
-        screenheight = 600
+        screenwidth = 1500
+        screenheight = 800
 
         pygame.init()
         self.screen = pygame.display.set_mode((screenwidth, screenheight))
@@ -37,7 +37,7 @@ class Game:
             else (AiPlayerInterface(ab, 1), AiPlayerInterface(mcts, 2))
         )
         
-
+        
     def run(self):   
         self.screen.blit(self.gameStateManager.img.setup_bg, (0, 0))
 
