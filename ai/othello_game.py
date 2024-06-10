@@ -9,7 +9,7 @@ Thanks to original author Daniel Bauer, Columbia University
 import sys
 import subprocess
 from threading import Timer
-from ai.display import Images, Draw
+from ai.display import Images, Draw, Fonts
 from ai.othello_shared import find_lines, get_possible_moves, play_move, get_score
 
 class InvalidMoveError(RuntimeError):
@@ -97,6 +97,7 @@ class OthelloGameManager(object):
         self.white_score = 0
         self.img = Images(screen)
         self.draw = Draw(screen)
+        self.font = Fonts()
         self.first_player = 'mcts'
 
     def clear_game(self):

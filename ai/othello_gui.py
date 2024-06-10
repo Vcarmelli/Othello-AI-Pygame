@@ -14,7 +14,6 @@ class OthelloGui:
     def __init__(self, screen, gameStateManager):
         self.screen = screen
         self.game = gameStateManager
-        self.cell_size = 60
         self.playing = False
 
 
@@ -23,7 +22,8 @@ class OthelloGui:
         self.playing = True
 
     def run(self):
-        self.screen.blit(self.game.img.setup_bg, (0, 0))
+        self.screen.blit(self.game.img.game_bg, (0, 0))
+        pygame.display.set_caption("Othello Game")
         
         # FOR HUMAN PLAYER
         # for event in pygame.event.get():
@@ -74,30 +74,40 @@ class OthelloGui:
         if isinstance(self.players[2], AiPlayerInterface):
             print("FROM SHUTDOWN P2")
             self.players[2].kill(self.game)
-
-        input("======= PAUSE =======")
         
+        self.draw_board()
+        self.game.draw.text(f"{text}", self.game.font.medium, WHITE, (370, self.screen.get_height() // 2 + 240))
+        self.game.draw.text("Click anywhere to continue", self.game.font.medium, WHITE, (370, self.screen.get_height() // 2 + 300))
+        pygame.display.update()
 
+        while self.playing:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.game.set_state('menu')
+                    self.playing = False
+
+        
     def check_game_over(self):
         if not get_possible_moves(self.game.board, 1) and not get_possible_moves(self.game.board, 2):
             light_score, dark_score = get_score(self.game.board)
+            self.game.set_scores(dark_score, light_score)
 
             print("Dark Score:", dark_score)    
             print("Light Score:", light_score)
             if dark_score > light_score:
-                self.shutdown("Game Over, Dark wins!")
+                self.shutdown("Game Over, Black wins!")
             elif light_score > dark_score:
-                self.shutdown("Game Over, Light wins!")
+                self.shutdown("Game Over, White wins!")
             else:
                 self.shutdown("Game Over, It's a draw!")
-
-            self.game.set_scores(dark_score, light_score)
-            self.game.set_state('over')
-            self.playing = False
-
+            
 
     def ai_move(self):
         player_obj = self.players[self.game.current_player]
+        
         try:
             i, j = player_obj.get_move(self.game)
 
@@ -106,42 +116,75 @@ class OthelloGui:
 
             self.game.play(i, j)
             self.draw_board()
-            
-            light_score, dark_score = get_score(self.game.board)
-            self.game.draw.text(None, f"{player_obj.name} ({player}) move to ({i}, {j})", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 1 - 90))
-            self.game.draw.text(None, f"BLACK: {dark_score}   WHITE: {light_score}", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 1 - 50))
-            pygame.time.delay(900)
-            pygame.display.update()
+            self.game.draw.text(f"{player_obj.name} ({player}) move to ({i}, {j})", self.game.font.medium, WHITE, (370, self.screen.get_height() // 2 + 250))
 
+            pygame.time.delay(100)
+            pygame.display.update()
             if not get_possible_moves(self.game.board, self.game.current_player):
                 self.check_game_over()
         except AiTimeoutError:
             self.shutdown(f"Game Over, {player_obj.name} lost (timeout)")
+
+    def draw_scores(self):
+        score_middle_y = self.screen.get_height() // 2
+        x_position = 370 
+        light_score, dark_score = get_score(self.game.board)
         
+        left, right = ("BLACK", "WHITE") if self.game.first_player == 'mcts' else ("WHITE", "BLACK")
+        left_score, right_score = (dark_score, light_score) if left == "BLACK" else (light_score, dark_score)
+
+        self.game.draw.text(left, self.game.font.large, WHITE, (x_position - 170, score_middle_y - 180))
+        self.game.draw.text(right, self.game.font.large, WHITE, (x_position + 150, score_middle_y - 180))
+        self.game.draw.text(f"{left_score}", self.game.font.larger, WHITE, (x_position - 170, score_middle_y))
+        self.game.draw.text(f"{right_score}", self.game.font.larger, WHITE, (x_position + 150, score_middle_y))
+
+
     def draw_board(self):
-        self.screen.blit(self.game.img.setup_bg, (0, 0))
-        self.draw_grid()
-        self.draw_disks()
+        self.screen.blit(self.game.img.game_bg, (0, 0))
+        
+        board_size = 700
+        self.cell_size  = board_size // self.game.dimension
 
-    def draw_grid(self):
+        start_x = self.screen.get_width() - board_size - 100  
+        start_y = (self.screen.get_height() - board_size) // 2
+
+        self.draw_grid(start_x, start_y)
+        self.draw_disks(start_x, start_y)
+        self.draw_scores()
+
+
+    def draw_grid(self, start_x, start_y):
         for i in range(self.game.dimension):
             for j in range(self.game.dimension):
-                pygame.draw.rect(self.screen, (0, 0, 0), (i * self.cell_size, j * self.cell_size, self.cell_size, self.cell_size), 1)
+                pygame.draw.rect(self.screen, WHITE, 
+                                (start_x + i * self.cell_size, start_y + j * self.cell_size,  
+                                self.cell_size, self.cell_size), 1)
 
-    def draw_disk(self, i, j, color_image):
-        x = i * self.cell_size + (self.cell_size - color_image.get_width()) // 2
-        y = j * self.cell_size + (self.cell_size - color_image.get_height()) // 2
-        self.screen.blit(color_image, (x, y))
-
-    def draw_disks(self):
+    def draw_disks(self, start_x, start_y):
         for i in range(self.game.dimension):
             for j in range(self.game.dimension):
-                if self.game.board[i][j] == 1:
-                    self.draw_disk(j, i, self.game.img.black_piece)
-                elif self.game.board[i][j] == 2:
-                    self.draw_disk(j, i, self.game.img.white_piece)
+                if self.game.board[i][j] != 0:  # Assuming 0 means no disk
+                    color = (255, 255, 255) if self.game.board[i][j] == 1 else (0, 0, 0)
+                    pygame.draw.circle(self.screen, color, 
+                                    (start_x + i * self.cell_size + self.cell_size // 2, 
+                                    start_y + j * self.cell_size + self.cell_size // 2), 
+                                    self.cell_size // 2 - 5)
+                    
+    
+    # UNCOMMENT TO DRAW DISK USING PIECE IMAGE
 
+    # def draw_disk(self, i, j, color_image, start_x, start_y):
+    #     x = start_x + i * self.cell_size + (self.cell_size - color_image.get_width()) // 2
+    #     y = start_y + j * self.cell_size + (self.cell_size - color_image.get_height()) // 2
+    #     self.screen.blit(color_image, (x, y))
 
+    # def draw_disks(self, start_x, start_y):
+    #     for i in range(self.game.dimension):
+    #         for j in range(self.game.dimension):
+    #             if self.game.board[i][j] == 1:
+    #                 self.draw_disk(j, i, self.game.img.black_piece, start_x, start_y)
+    #             elif self.game.board[i][j] == 2:
+    #                 self.draw_disk(j, i, self.game.img.white_piece, start_x, start_y)
 
 
 class Menu:
@@ -171,21 +214,13 @@ class Setup:
 
     def run(self):
         self.screen.blit(self.game.img.setup_bg, (0, 0))
-        pygame.display.set_caption("MCTS vs Alpha Beta")
-
-        self.game.draw.text(None, "This is the simulation of two AI", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 4))
-        self.game.draw.text(None, "The Monte Carlo Search Tree", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3))
-        self.game.draw.text(None, "and", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3 + 35))
-        self.game.draw.text(None, "Minimax with Alpha Beta Pruning", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 3 + 70))
-
-        self.game.draw.text(None, "Select which algorithm will move first", WHITE, (self.screen.get_width() // 2, self.screen.get_height() // 2 + 70))
+        pygame.display.set_caption("Monte Carlo Search Tree vs Minimax")
         MOUSE_POS = pygame.mouse.get_pos()
 
-        mcts_btn = Button(None, (self.screen.get_width() // 2 - 70, self.screen.get_height() // 2 + 120), 
-                            "MCTS", BTN_COLOR, BTN_HOVER_COLOR)
-        
-        ab_btn = Button(None, (self.screen.get_width() // 2 + 70, self.screen.get_height() // 2 + 120), 
-                            "MINIMAX", BTN_COLOR, BTN_HOVER_COLOR)
+        mcts_btn = Button(self.game.img.mcts, (self.screen.get_width() // 2 - 300, self.screen.get_height() // 2 + 250), 
+                        None, BTN_COLOR, BTN_HOVER_COLOR)
+        ab_btn = Button(self.game.img.minimax, (self.screen.get_width() // 2 + 300, self.screen.get_height() // 2 + 250), 
+                        None, BTN_COLOR, BTN_HOVER_COLOR)
         
 
         for button in [mcts_btn, ab_btn]:
@@ -204,51 +239,5 @@ class Setup:
                     self.game.first_player = 'ab'
                     self.game.set_state('game')
                     
-        pygame.display.update()
-
-
-class GameOver:
-    def __init__(self, screen, gameStateManager):
-        self.screen = screen
-        self.game = gameStateManager
-    
-    def run(self):
-        self.screen.blit(self.game.img.setup_bg, (0, 0))
-
-        mcts_score = self.game.black_score if self.game.first_player == 'mcts' else self.game.white_score
-        ab_score = self.game.white_score if self.game.first_player == 'mcts' else self.game.black_score
-
-        self.game.draw.text(None, f"MCTS Score: {mcts_score}", (255, 255, 255), (self.screen.get_width() // 2, self.screen.get_height() // 6 + 50))
-        self.game.draw.text(None, f"MINIMAX Score: {ab_score}", (255, 255, 255), (self.screen.get_width() // 2, self.screen.get_height() // 5))
-
-        MOUSE_POS = pygame.mouse.get_pos()
-
-        menu_btn = Button(None, (self.screen.get_width() // 2, self.screen.get_height() // 2), 
-                            "Back to Menu", BTN_COLOR, BTN_HOVER_COLOR)
-        exit_btn = Button(None, (self.screen.get_width() // 2, self.screen.get_height() // 2 + 70), 
-                            "Exit", BTN_COLOR, BTN_HOVER_COLOR)
-
-        for button in [menu_btn, exit_btn]:
-            button.update_color(MOUSE_POS)
-            button.draw_button(self.screen)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    self.game.set_state('menu')
-                elif event.key == pygame.K_q:
-                    pygame.quit()
-                    sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if menu_btn.click_button(MOUSE_POS):
-                    self.game.set_state('menu')
-                elif exit_btn.click_button(MOUSE_POS):
-                    pygame.quit()
-                    sys.exit()
-
         pygame.display.update()
 

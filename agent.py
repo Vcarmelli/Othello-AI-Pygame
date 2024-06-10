@@ -414,7 +414,7 @@ def run_ai():
     Then it repeatedly receives the current score and current board state
     until the game is over.
     """
-    print("ALPHA-BETA AI") # First line is the name of this AI
+    print("MINIMAX AI") # First line is the name of this AI
     arguments = input().split(",")
     
     color = int(arguments[0]) #Player color: 1 for dark (goes first), 2 for light. 
