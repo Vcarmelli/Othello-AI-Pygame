@@ -3,44 +3,41 @@ import pygame
 class Fonts:
 	def __init__(self):
 		self.default = pygame.font.Font(None, 36)
+		self.medium = pygame.font.Font(None, 40)  
+		self.large = pygame.font.Font(None, 48)  
+		self.larger = pygame.font.Font(None, 250)  
 		
 
 class Images:
-    def __init__(self, screen):
-        cell_size = 80
+	def __init__(self, screen):
+		cell_size = 87
 
-        self.black_piece = pygame.image.load('assets/piece1.png')
-        self.black_piece = pygame.transform.scale(self.black_piece, (int(cell_size / 1.2), int(cell_size / 1.2)))
-        self.white_piece = pygame.image.load('assets/piece2.png')
-        self.white_piece = pygame.transform.scale(self.white_piece, (int(cell_size / 1.2), int(cell_size / 1.2)))
+		self.black_piece = pygame.image.load('assets/piece1.png')
+		self.black_piece = pygame.transform.scale(self.black_piece, (int(cell_size / 1.2), int(cell_size / 1.2)))
+		self.white_piece = pygame.image.load('assets/piece2.png')
+		self.white_piece = pygame.transform.scale(self.white_piece, (int(cell_size / 1.2), int(cell_size / 1.2)))
 
-        self.menu_bg = pygame.image.load('assets/index.jpg')
-        self.menu_bg = pygame.transform.scale(self.menu_bg, (screen.get_width(), screen.get_height()))
-        self.setup_bg = pygame.image.load('assets/boardbg.jpg')
-        self.setup_bg = pygame.transform.scale(self.setup_bg, (screen.get_width(), screen.get_height()))
-        self.game_bg = pygame.image.load('assets/board.jpg')
-        self.game_bg = pygame.transform.scale(self.game_bg, (screen.get_width(), screen.get_height()))
+		self.menu_bg = pygame.image.load('assets/index.png')
+		self.menu_bg = pygame.transform.scale(self.menu_bg, (screen.get_width(), screen.get_height()))
+		self.setup_bg = pygame.image.load('assets/setup.png')
+		self.setup_bg = pygame.transform.scale(self.setup_bg, (screen.get_width(), screen.get_height()))
+		self.game_bg = pygame.image.load('assets/board.png')
+		self.game_bg = pygame.transform.scale(self.game_bg, (screen.get_width(), screen.get_height()))
+
+		self.mcts = pygame.image.load("assets/MCTS.png")
+		self.mcts = pygame.transform.scale(self.mcts, (290, 100))
+		self.minimax = pygame.image.load("assets/MINIMAX.png")
+		self.minimax = pygame.transform.scale(self.minimax, (290, 100))
 
 class Draw:
-    def __init__(self, screen):
-        self.screen = screen
-        self.font = Fonts()
+	def __init__(self, screen):
+		self.screen = screen
 
-    def text(self, fill_color, text, font_color, pos):
-        if fill_color is not None:
-            text_bg = pygame.Surface(pos)
-            text_bg.fill(fill_color)
-            bg_rect = text_bg.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
+	def text(self, text, font, font_color, pos):
+		output = font.render(text, True, font_color)		
+		text_rect = output.get_rect(center=pos)
 
-            output = self.font.default.render(text, True, font_color)
-            text_rect = output.get_rect(center=(bg_rect.centerx, bg_rect.centery))
-            
-            self.screen.blit(text_bg, bg_rect)
-        else:
-            output = self.font.default.render(text, True, font_color)
-            text_rect = output.get_rect(center=pos)
-
-        self.screen.blit(output, text_rect)
+		self.screen.blit(output, text_rect)
 		
 
 class Button:
