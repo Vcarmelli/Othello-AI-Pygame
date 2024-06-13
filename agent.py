@@ -305,7 +305,7 @@ def alphabeta_min_node(board, color, alpha, beta, limit, caching = 0, ordering =
     for moves in allMoves:
         nextState = play_move(board, opposingColor, moves[0], moves[1])
 
-        utility = minimax_max_node(nextState, color, limit-1, caching)[1]
+        utility = alphabeta_max_node(nextState, color, alpha, beta, limit-1)[1]
 
         if(utility < minUtility):
             worstMove = moves
@@ -365,7 +365,7 @@ def alphabeta_max_node(board, color, alpha, beta, limit, caching = 0, ordering =
 
         #Determining the color of the other player, and traversing accordingly
         #We only care about the utility value, hence the [1]
-        utility = minimax_min_node(nextState, color, limit-1, caching)[1]
+        utility = alphabeta_min_node(nextState, color, alpha, beta, limit-1)[1]
 
     #Step 3: Update max value
         if(utility > maxUtility):
