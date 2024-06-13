@@ -1,11 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-This module contains the main Othello game which maintains the board, score, and 
-players.  
-
-Thanks to original author Daniel Bauer, Columbia University
-"""
+import time
 import sys
 import subprocess
 from threading import Timer
@@ -37,14 +30,17 @@ class AiPlayerInterface(Player):
         c = 0   #caching
         o = 1   #ordering
 
+        self.start_time = 0
+        self.accumulated_time = 0
+        self.is_running = False
+
         self.process = subprocess.Popen([sys.executable, filename], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         name = self.process.stdout.readline().decode("ASCII").strip()
-        print("AI introduced itself as: {}".format(name))
+        print("\nAI introduced itself as: {}".format(name))
         #print(f"Subprocess PID: {self.process.pid}")
         
         self.name = name
         
-        print(f"{player},{l},{m},{c},{o}\n")
         self.process.stdin.write(f"{player},{l},{m},{c},{o}\n".encode("ASCII"))
         self.process.stdin.flush()
 
@@ -54,11 +50,11 @@ class AiPlayerInterface(Player):
         self.timed_out = True
 
     def get_move(self, manager):
-        white_score, dark_score = get_score(manager.board)
-        print(f"SCORE: W -> {white_score} B -> {dark_score}\n")
+        black_score, white_score = get_score(manager.board)
+        print(f"SCORE: B: {black_score}  W: {white_score}")
         #print(f"BOARD: {manager.board}\n")
         
-        self.process.stdin.write(f"SCORE {white_score} {dark_score}\n".encode("ASCII"))
+        self.process.stdin.write(f"SCORE {black_score} {white_score}\n".encode("ASCII"))
         self.process.stdin.flush()
         self.process.stdin.write(f"{manager.board}\n".encode("ASCII"))
         self.process.stdin.flush()
@@ -70,7 +66,6 @@ class AiPlayerInterface(Player):
 
         # Wait for the AI call
         move_s = self.process.stdout.readline().decode("ASCII")
-        print("MOVE_S:", move_s)
         if self.timed_out:  
             raise AiTimeoutError
         timer.cancel()
@@ -80,10 +75,30 @@ class AiPlayerInterface(Player):
         return i,j 
     
     def kill(self, manager):
-        print("Subprocess KILL")
+        #print("Subprocess Kill")
         white_score, dark_score = get_score(manager.board)
         self.process.stdin.write("FINAL {} {}\n".format(white_score, dark_score).encode("ASCII"))
         self.process.kill() 
+
+    def start_turn(self):
+        if not self.is_running:
+            self.start_time = time.time()
+            self.is_running = True
+            print(f"{self.name}'s turn started.")
+
+    def end_turn(self):
+        if self.is_running:
+            elapsed_time = time.time() - self.start_time
+            self.accumulated_time += elapsed_time
+            self.is_running = False
+            print(f"{self.name}'s turn ended. Time accumulated: {self.accumulated_time:.2f} seconds.")
+
+    def get_accumulated_time(self):
+        if self.is_running:
+            current_time = time.time()
+            return self.accumulated_time + (current_time - self.start_time)
+        else:
+            return self.accumulated_time
 
 
 class OthelloGameManager(object):
@@ -105,6 +120,8 @@ class OthelloGameManager(object):
         self.white_score = 0
         self.board = self.create_initial_board()
         self.current_player = 1
+        self.first_player = 'mcts'
+        self.winner = None
 
     def get_state(self):
         return self.current_state
@@ -112,7 +129,7 @@ class OthelloGameManager(object):
     def set_state(self, state):
         self.current_state = state
 
-    def set_scores(self, black_score, white_score):
+    def set_scores(self, white_score, black_score):
         self.black_score = black_score
         self.white_score = white_score
             

@@ -433,7 +433,7 @@ def run_ai():
     else: eprint("Node Ordering is OFF")
 
     if (limit == -1): eprint("Depth Limit is OFF")
-    else: eprint("Depth Limit is ", limit)
+    else: eprint("Depth Limit is", limit)
 
     if (minimax == 1 and ordering == 1): eprint("Node Ordering should have no impact on Minimax")
 

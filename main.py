@@ -3,14 +3,14 @@ import pygame
 from ai.othello_game import OthelloGameManager, AiPlayerInterface, Player, InvalidMoveError, AiTimeoutError
 from ai.othello_gui import OthelloGui, Menu, Setup
 
+FPS = 60
+SCREENWIDTH = 1500 
+SCREENHEIGHT = 800 
 
 class Game:
     def __init__(self):
-        screenwidth = 1500 
-        screenheight = 800 
-
         pygame.init()
-        self.screen = pygame.display.set_mode((screenwidth, screenheight))
+        self.screen = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
         self.gameStateManager = OthelloGameManager(self.screen, 'menu')
 
         self.menu = Menu(self.screen, self.gameStateManager)
@@ -55,7 +55,7 @@ class Game:
                     sys.exit()
 
             self.state[curr_state].run()
-            print("curr_state: ", curr_state)
+            #print("curr_state: ", curr_state)
 
             pygame.display.flip()
 

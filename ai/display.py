@@ -2,7 +2,7 @@ import pygame
 
 class Fonts:
 	def __init__(self):
-		self.default = pygame.font.Font(None, 36)
+		self.small = pygame.font.Font(None, 36)
 		self.medium = pygame.font.Font(None, 40)  
 		self.large = pygame.font.Font(None, 48)  
 		self.larger = pygame.font.Font(None, 250)  
@@ -29,6 +29,9 @@ class Images:
 		self.minimax = pygame.image.load("assets/MINIMAX.png")
 		self.minimax = pygame.transform.scale(self.minimax, (290, 100))
 
+		self.play = pygame.image.load("assets/PLAY.png")
+		self.play = pygame.transform.scale(self.play, (290, 100))
+
 class Draw:
 	def __init__(self, screen):
 		self.screen = screen
@@ -48,7 +51,7 @@ class Button:
 		self.font = Fonts()
 		self.base_color, self.hovering_color = base_color, hovering_color
 		self.text_input = text_input
-		self.text = self.font.default.render(self.text_input, True, self.base_color)
+		self.text = self.font.medium.render(self.text_input, True, self.base_color)
 		if self.image is None:
 			self.image = self.text
 		self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
@@ -67,6 +70,6 @@ class Button:
 
 	def update_color(self, position):
 		if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
-			self.text = self.font.default.render(self.text_input, True, self.hovering_color)
+			self.text = self.font.medium.render(self.text_input, True, self.hovering_color)
 		else:
-			self.text = self.font.default.render(self.text_input, True, self.base_color)
+			self.text = self.font.medium.render(self.text_input, True, self.base_color)
