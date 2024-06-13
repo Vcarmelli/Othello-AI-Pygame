@@ -98,7 +98,7 @@ class OthelloGui:
             self.game.draw.text(f"Accumulated time: {player_obj.get_accumulated_time():.2f} seconds", self.game.font.small, WHITE, (370, self.screen.get_height() // 2 + 260))
             self.game.draw.text(f"{player_opp.name}'s turn...", self.game.font.medium, WHITE, (370, self.screen.get_height() // 2 + 320))
             
-            pygame.time.delay(100)
+            pygame.time.delay(700)
             pygame.display.update()
 
             if not get_possible_moves(self.game.board, self.game.current_player):
